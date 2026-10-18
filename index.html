@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>사주 오행 판</title>
-<meta name="description" content="생년월일시로 보는 사주팔자 · 오행 · 대운 · 연도별 운세 · 궁합 · MBTI">
+<meta name="description" content="생년월일시로 보는 사주팔자 · 오행 · 대운 · 연도별 운세 · 궁합 · MBTI · AI 사주 상담">
 <meta property="og:title" content="사주 오행 판">
-<meta property="og:description" content="생년월일만 넣으면 사주팔자, 대운, 10년 운세, 궁합까지 한 번에">
+<meta property="og:description" content="생년월일만 넣으면 사주팔자, 대운, 10년 운세, 궁합, AI 상담까지 한 번에">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#A8342B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='6' width='52' height='52' rx='8' fill='none' stroke='%23A8342B' stroke-width='5'/%3E%3Ctext x='32' y='45' font-size='34' text-anchor='middle' fill='%23A8342B' font-family='serif' font-weight='700'%3E命%3C/text%3E%3C/svg%3E">
@@ -228,6 +228,22 @@ ul.why,ul.plain{margin:0;padding-left:18px;font-size:14px;line-height:1.75;displ
 .mbc{position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--line)}
 .mbd{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);border:2px solid var(--surface)}
 .mbu{position:absolute;top:-22px;transform:translateX(-50%);font-size:10px;background:var(--ink);color:var(--surface);border-radius:4px;padding:0 4px;line-height:16px}
+.askbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.achips{display:flex;flex-wrap:wrap;gap:6px}
+.achip{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.achip:hover{border-color:var(--accent);color:var(--accent)}
+.alog{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow-y:auto}
+.alog:empty{display:none}
+.amsg{max-width:88%;padding:10px 14px;border-radius:12px;font-size:14.5px;line-height:1.75}
+.amsg.me{align-self:flex-end;background:var(--ink);color:var(--surface);border-bottom-right-radius:4px}
+.amsg.bot{align-self:flex-start;background:var(--bg);border:1px solid var(--line);border-bottom-left-radius:4px}
+.adot{color:var(--muted)}
+.aform{display:flex;gap:8px;flex-direction:row!important;align-items:stretch!important;padding:0;border:0;background:none;border-radius:0}
+.aform input{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.aform .go{margin-left:0}
+.ameta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.ameta input{font:inherit;padding:2px 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+@media (max-width:560px){.aform{flex-direction:column!important}.amsg{max-width:96%}}
 .ov{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px}
 .ov-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:16px 18px;border-top:1px solid var(--line)}
 .ov-row:first-child{border-top:0}
@@ -372,7 +388,7 @@ footer{font-size:12.5px;color:var(--muted);line-height:1.7;max-width:75ch}
   <section class="confirm" id="confirm" aria-live="polite"></section>
 
   <nav class="toc" aria-label="목차">
-    <a href="#s-won">원국</a><a href="#s-oh">오행</a><a href="#s-ys">강약·용신</a><a href="#s-gk">격국</a><a href="#s-rel">합충·신살</a><a href="#s-ov">종합풀이</a><a href="#s-dw">대운·세운</a><a href="#s-tot">총운</a>
+    <a href="#s-won">원국</a><a href="#s-oh">오행</a><a href="#s-ys">강약·용신</a><a href="#s-gk">격국</a><a href="#s-rel">합충·신살</a><a href="#s-ov">종합풀이</a><a href="#s-dw">대운·세운</a><a href="#s-tot">총운</a><a href="#s-ask">상담</a>
   </nav>
 
   <section class="summary" id="summary"></section>
@@ -465,6 +481,19 @@ footer{font-size:12.5px;color:var(--muted);line-height:1.7;max-width:75ch}
   <section class="sec" id="s-tot">
     <div class="sec-h"><h2>총운</h2><span class="muted">앞으로 어떻게 살면 좋을까</span></div>
     <div class="tot" id="total"></div>
+  </section>
+
+  <section class="sec" id="s-ask">
+    <div class="sec-h"><h2>사주 상담</h2><span class="muted">내 사주를 바탕으로 무엇이든 물어보세요</span></div>
+    <div class="askbox">
+      <div class="achips" id="askChips"></div>
+      <div class="alog" id="askLog" aria-live="polite"></div>
+      <form id="askForm" class="aform" autocomplete="off">
+        <input id="askIn" maxlength="300" placeholder="예) 내년에 창업해도 될까요?" aria-label="질문">
+        <button type="submit" class="go" id="askGo">질문하기</button>
+      </form>
+      <div class="ameta"><span id="askLeft"></span><label id="askCodeWrap" hidden>입장 코드 <input id="askCode" size="10"></label><span>질문과 사주 정보는 답변을 위해 AI로 전송되며 저장하지 않습니다.</span></div>
+    </div>
   </section>
 
 
@@ -1372,7 +1401,7 @@ function run(){
   $('fErr').hidden=!o.err; if(o.err){$('fErr').textContent=o.err+'. 날짜를 다시 확인해 주세요.';return}
   R=compute(o); A=analyze(R);
   renderConfirm(o);
-  renderSummary();renderPillars();renderOhaeng();renderStrength();renderYongsin();renderGyeok();renderRel();renderKeySum();renderOverall();renderDW();renderTotal();
+  renderSummary();renderPillars();renderOhaeng();renderStrength();renderYongsin();renderGyeok();renderRel();renderKeySum();renderOverall();renderDW();renderTotal();if(typeof askReset==='function')askReset();
 }
 
 function renderConfirm(o){
@@ -2122,6 +2151,63 @@ function runGh(scroll){
 `;
   if(scroll) $('viewGh').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+/* ================= AI 사주 상담 ================= */
+function sajuBrief(){
+  const P=R.pillars, o=R.o, dm=A.dm, de=A.de, age=NOW-R.y;
+  const [y,m,d]=o.date.split('-').map(Number), lu=solarToLunar(y,m,d);
+  const pil=k=>P[k]?`${ST[P[k].s]}${BR[P[k].b]}(천간 ${k==='day'?'일간':tenGod(dm,P[k].s)}, 지지 ${tenGod(dm,MAIN(P[k].b))})`:'모름';
+  const L=[];
+  L.push(`기본: 양력 ${o.date}${o.hasTime?' '+o.time:' (시간 모름)'} / 음력 ${lu?`${lu.y}.${lu.leap?'윤':''}${lu.m}.${lu.d}`:'-'} / ${o.g==='M'?'남':'여'} / 올해(${NOW}) 만 ${age}세 / ${ANIMAL[P.year.b]}띠`);
+  L.push(`사주: 년주 ${pil('year')}, 월주 ${pil('month')}, 일주 ${pil('day')}, 시주 ${pil('hour')}`);
+  L.push(`일간: ${ST[dm]}${EL[de]} (${DM_TXT[dm][0]}), ${SEASONS[seasonIdx(P.month.b)]} 출생, 일주 ${ST[dm]}${BR[P.day.b]}`);
+  L.push(`오행 세력: ${A.ep.map((v,e)=>`${EL[e]} ${Math.round(v*100)}%`).join(', ')} / 없는 오행: ${A.cnt.map((v,e)=>v===0?EL[e]:null).filter(Boolean).join('·')||'없음'}`);
+  L.push(`십성군: ${GRP.map((n,i)=>`${n} ${Math.round(A.g[i]*100)}%`).join(', ')}`);
+  L.push(`강약: ${A.level}(${Math.round(A.score)}점), 득령 ${A.deukryung?'O':'X'} 득지 ${A.deukji?'O':'X'} 득세 ${A.deukse?'O':'X'}`);
+  L.push(`격국: ${A.jong?A.jong.type:A.gName} (${A.gStatus})${A.ok.length?' / 돕는 요소: '+A.ok.join(', '):''}${A.bad.length?' / 깨는 요소: '+A.bad.join(', '):''}`);
+  L.push(`용신 ${EL[A.Y]}(${GRP[mod(A.Y-de,5)]}) · 희신 ${EL[A.role.indexOf('희신')]} · 기신 ${EL[A.role.indexOf('기신')]} · 구신 ${EL[A.role.indexOf('구신')]} · 한신 ${EL[A.role.indexOf('한신')]} (${A.method})`);
+  if(A.rel.length) L.push(`원국 합충: ${[...new Set(A.rel.map(r=>`${r.txt}${r.a?`(${POSK[r.a]}-${POSK[r.b]})`:''}`))].join(', ')}`);
+  if(A.ss.length) L.push(`신살: ${[...new Set(A.ss.map(s=>`${s.name}(${POSK[s.k]}주)`))].join(', ')} / 공망 ${A.gong.map(b=>BR[b]).join('')}`);
+  const curI=R.dw.findIndex((x,i)=>age>=x.age&&(!R.dw[i+1]||age<R.dw[i+1].age));
+  L.push(`대운(${R.fwd?'순행':'역행'}, 대운수 ${R.dsu}): `+R.dw.map((x,i)=>{const e=evalLuck(A,R,x.s,x.b);return `${x.age}~${x.age+9}세(${x.year}~) ${ST[x.s]}${BR[x.b]} ${tenGod(dm,x.s)}/${tenGod(dm,MAIN(x.b))} ${rateOf(e.v)[0]}${i===curI?' ←현재':''}`}).join('; '));
+  L.push('향후 10년 세운: '+yearScan().map(x=>`${x.Y}(${x.Y-R.y}세) ${ST[x.s]}${BR[x.b]} ${x.ts}/${x.tb} ${x.rate[0]}`+[x.money,x.work,x.love,x.move,x.hl].filter(z=>z.m).map(z=>' · '+z.t).join('')).join('; '));
+  const mb=mbtiFromSaju(A).map(x=>x.letter).join('');
+  L.push(`MBTI: 사주로 본 성향 ${mb}${o.mbti?`, 실제 MBTI ${o.mbti}`:''}`);
+  return L.join('\n');
+}
+var askHist=[], askBusy=false;
+function askChips(){
+  const age=NOW-R.y, b=band(age);
+  const C=b==='kid'?['우리 아이는 어떤 공부가 잘 맞나요?','아이 성격의 장점과 단점은?','어떻게 키우면 좋을까요?','올해 아이의 운은 어떤가요?']
+    :b==='teen'?['어떤 진로가 맞을까요?','올해 시험운은 어떤가요?','친구 관계는 어떤가요?','공부 방법은 어떻게 할까요?']
+    :b==='senior'?['올해 건강은 무엇을 조심할까요?','자녀와의 관계는 어떤가요?','남은 재물운은 어떤가요?','노후를 어떻게 보내면 좋을까요?']
+    :['올해 재물운은 어떤가요?','이직하거나 사업을 해도 될까요?',age<45?'결혼운은 언제 들어오나요?':'부부 관계는 어떤가요?','나에게 맞는 사업 분야는?','앞으로 10년 중 가장 좋은 해는?','건강은 무엇을 조심해야 하나요?'];
+  $('askChips').innerHTML=C.map(q=>`<button type="button" class="achip">${q}</button>`).join('');
+  $('askChips').querySelectorAll('.achip').forEach(bn=>bn.addEventListener('click',()=>{$('askIn').value=bn.textContent;sendAsk()}));
+}
+function askReset(){askHist=[];$('askLog').innerHTML='';askChips()}
+const mdLite=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#{1,4}\s*(.+)$/gm,'<b>$1</b>').replace(/^[-•]\s+(.+)$/gm,'· $1').replace(/\n/g,'<br>');
+function askAdd(role,html){const d=document.createElement('div');d.className='amsg '+role;d.innerHTML=html;$('askLog').appendChild(d);d.scrollIntoView({block:'nearest'});return d}
+async function sendAsk(){
+  if(askBusy) return;
+  const q=$('askIn').value.trim(); if(!q) return;
+  if(location.protocol==='file:'||/claude\.ai|claudeusercontent/.test(location.host)){askAdd('bot','상담 기능은 배포된 사이트에서만 동작합니다.');return}
+  askBusy=true;$('askGo').disabled=true;$('askIn').value='';
+  askAdd('me',mdLite(q));const w=askAdd('bot','<span class="adot">사주를 살펴보는 중…</span>');
+  let code='';try{code=localStorage.getItem('saju-ask-code')||''}catch(e){}
+  try{
+    const r=await fetch('/api/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:q,brief:sajuBrief(),history:askHist,code})});
+    const j=await r.json().catch(()=>({error:'응답을 읽지 못했습니다.'}));
+    if(j.needCode){w.innerHTML='입장 코드가 필요합니다. 아래 칸에 코드를 넣고 다시 질문해 주세요.';$('askCodeWrap').hidden=false}
+    else if(!r.ok||j.error){w.textContent=j.error||'잠시 후 다시 시도해 주세요.'}
+    else{w.innerHTML=mdLite(j.answer);askHist.push({role:'user',content:q},{role:'assistant',content:j.answer});askHist=askHist.slice(-6);
+      if(typeof j.left==='number') $('askLeft').textContent=`오늘 남은 질문 ${j.left}회`}
+  }catch(e){w.textContent='연결에 실패했습니다. 인터넷 연결을 확인해 주세요.'}
+  askBusy=false;$('askGo').disabled=false;$('askIn').focus();
+}
+$('askForm').addEventListener('submit',e=>{e.preventDefault();sendAsk()});
+$('askCode').addEventListener('change',()=>{try{localStorage.setItem('saju-ask-code',$('askCode').value.trim())}catch(e){}});
+if(typeof R!=='undefined'&&R) askReset();
 
 </script>
 
