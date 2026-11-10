@@ -1,7 +1,7 @@
 // 사주 상담 API — Vercel 서버리스 함수
 // 필요한 환경변수: ANTHROPIC_API_KEY
 // 선택 환경변수: ASK_MODEL, ASK_DAILY_LIMIT(1인 하루 질문 수, 기본 15), ASK_GLOBAL_DAILY_LIMIT(전체 하루, 기본 500),
-//               ASK_ACCESS_CODE(설정하면 이 코드를 입력한 사람만 사용), ALLOWED_ORIGINS(쉼표 구분 도메인)
+//               ASK_ACCESS_CODE(설정하면 이 코드를 입력한 사람만 사용), ALLOWED_ORIGINS(쉼표 구분 도메인, 설정하면 그 도메인과 토스 미니앱만 허용), TOSS_APP_NAME(앱인토스 앱 이름, 기본 saju-ohaeng)
 
 const MODEL = process.env.ASK_MODEL || 'claude-haiku-4-5-20251001';
 const DAILY = +(process.env.ASK_DAILY_LIMIT || 15);
@@ -24,13 +24,27 @@ const SYSTEM = `당신은 30년 경력의 한국 명리학 상담가입니다. �
 - 사주와 무관한 질문, 다른 사람을 해치거나 저주하는 질문에는 정중히 사주 상담 범위만 답한다고 말합니다.
 - 판단 근거나 계산 방법을 길게 설명하지 말고, 결과와 조언 위주로 답합니다.`;
 
+// 앱인토스 미니앱이 실행되는 도메인 (라이브 · 콘솔 QR 테스트)
+const TOSS_APP = process.env.TOSS_APP_NAME || 'saju-ohaeng';
+const TOSS_ORIGINS = [`https://${TOSS_APP}.apps.tossmini.com`, `https://${TOSS_APP}.private-apps.tossmini.com`];
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST만 지원합니다.' });
-
-  const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
   const origin = req.headers.origin || '';
-  if (allowed.length && !allowed.some(a => origin.endsWith(a))) return res.status(403).json({ error: '허용되지 않은 사이트입니다.' });
+  const extra = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const host = req.headers.host || '';
+  const sameSite = origin && host && origin.replace(/^https?:\/\//, '') === host;
+  const allowedOrigin = !origin || sameSite || TOSS_ORIGINS.includes(origin) || (extra.length ? extra.some(a => origin === a || origin.endsWith(a)) : true);
+  if (origin && allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+  if (req.method === 'OPTIONS') return res.status(allowedOrigin ? 204 : 403).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST만 지원합니다.' });
+  if (!allowedOrigin) return res.status(403).json({ error: '허용되지 않은 사이트입니다.' });
 
   if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: '상담 기능이 아직 설정되지 않았습니다. (API 키 없음)' });
 

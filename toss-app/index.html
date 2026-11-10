@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#F2F4F6">
+<title>사주 오행 판</title>
+<link rel="stylesheet" href="/src/legacy.css">
+<link rel="stylesheet" href="/src/app.css">
+</head>
+<body>
+<div id="app">
+
+<!-- ===== 사주 탭: 입력 ===== -->
+<section class="screen" id="scr-home" data-tab="saju">
+  <div class="hero">
+    <h1>사주 오행 판</h1>
+    <p>생년월일을 알려주시면 사주팔자와<br>대운, 10년 운세를 풀어 드려요.</p>
+  </div>
+
+  <div class="card" id="savedCard" hidden>
+    <div class="card-h"><h2>저장한 사주</h2><button type="button" class="txtbtn" id="editSaved">편집</button></div>
+    <ul class="plist" id="savedList"></ul>
+  </div>
+
+  <form class="card fcard" id="f" autocomplete="off">
+    <div class="card-h"><h2 id="formTitle">새 사주 보기</h2><button type="button" class="txtbtn" id="resetForm" hidden>새로 입력</button></div>
+    <label class="frow1"><span class="flabel">이름</span><input id="pname" maxlength="12" placeholder="예) 나, 엄마, 첫째"></label>
+    <div class="frow1"><span class="flabel">성별</span>
+      <div class="seg wide"><input type="radio" name="g" id="gM" value="M" checked><label for="gM">남자</label><input type="radio" name="g" id="gF" value="F"><label for="gF">여자</label></div>
+    </div>
+    <div class="frow1"><span class="flabel">생년월일</span>
+      <div class="seg wide"><input type="radio" name="cal" id="cS" value="S" checked><label for="cS">양력</label><input type="radio" name="cal" id="cL" value="L"><label for="cL">음력</label></div>
+      <div class="ymd3"><select id="yy" aria-label="년"></select><select id="mm" aria-label="월"></select><select id="dd" aria-label="일"></select></div>
+      <label class="chk sm" id="leapWrap" hidden><input type="checkbox" id="leap"> 윤달</label>
+    </div>
+    <div class="frow1"><span class="flabel">태어난 시각</span>
+      <div class="ymd2"><select id="hh" aria-label="시"></select><select id="mi" aria-label="분"></select></div>
+    </div>
+    <div class="frow1"><span class="flabel">태어난 곳</span>
+      <div class="ymd2"><select id="sido" aria-label="시·도"></select><select id="city" aria-label="시·군"></select><input type="number" id="lngIn" step="0.01" min="-180" max="180" value="127.00" aria-label="경도" hidden></div>
+    </div>
+    <div class="frow1"><span class="flabel">MBTI <small>선택</small></span><select id="mbti"><option value="">모름</option><option value="ISTJ">ISTJ</option><option value="ISFJ">ISFJ</option><option value="INFJ">INFJ</option><option value="INTJ">INTJ</option><option value="ISTP">ISTP</option><option value="ISFP">ISFP</option><option value="INFP">INFP</option><option value="INTP">INTP</option><option value="ESTP">ESTP</option><option value="ESFP">ESFP</option><option value="ENFP">ENFP</option><option value="ENTP">ENTP</option><option value="ESTJ">ESTJ</option><option value="ESFJ">ESFJ</option><option value="ENFJ">ENFJ</option><option value="ENTJ">ENTJ</option></select></div>
+    <details class="adv"><summary>세부 설정</summary>
+      <label class="frow1"><span class="flabel">자시 처리</span><select id="ja"><option value="jo" selected>23시부터 다음날 (조자시)</option><option value="ya">자정까지 당일 (야자시)</option></select></label>
+    </details>
+    <p class="err" id="fErr" role="alert" hidden></p>
+  </form>
+  <div class="cta"><button type="button" class="btn" id="goBtn">사주 보기</button></div>
+</section>
+
+<!-- ===== 사주 탭: 결과 ===== -->
+<section class="screen" id="scr-result" data-tab="saju" hidden>
+  <div class="rhero" id="rhero"></div>
+  <div class="subtabs" role="tablist" id="subtabs">
+    <button type="button" data-pg="sum" aria-selected="true">요약</button>
+    <button type="button" data-pg="won" aria-selected="false">원국</button>
+    <button type="button" data-pg="ov" aria-selected="false">풀이</button>
+    <button type="button" data-pg="luck" aria-selected="false">운세</button>
+  </div>
+  <div class="pg" id="pg-sum">
+<section class="sec"><div class="keysum" id="keysum"></div></section>
+<section class="sec" id="s-tot"><div class="sec-h"><h2>총운</h2><span class="muted">앞으로 어떻게 살면 좋을까</span></div><div class="tot" id="total"></div></section>
+    <section class="confirm" id="confirm"></section>
+  </div>
+  <div class="pg" id="pg-won" hidden>
+  <section class="summary" id="summary"></section>
+
+  <section class="sec" id="s-won">
+    <div class="sec-h"><h2>사주 원국</h2><span class="muted" id="termInfo"></span></div>
+    <p class="how">윗줄은 <b>천간</b>, 아랫줄은 <b>지지</b>, 빨간 테두리 일주의 윗글자가 <b>나(일간)</b>입니다.</p>
+    <div class="pillars" id="pillars"></div>
+    <details class="gloss">
+      <summary>십성 용어 풀이</summary>
+      <dl>
+        <div><dt>비견 · 겁재 <small>비겁</small></dt><dd>나와 같은 오행. 자존심, 독립심, 형제·동료·경쟁자.</dd></div>
+        <div><dt>식신 · 상관 <small>식상</small></dt><dd>내가 생하는 오행. 표현력, 재능, 기술. 여자에겐 자녀.</dd></div>
+        <div><dt>편재 · 정재 <small>재성</small></dt><dd>내가 극하는 오행. 돈, 결과물, 현실 감각. 남자에겐 아내, 모두에게 아버지.</dd></div>
+        <div><dt>편관 · 정관 <small>관성</small></dt><dd>나를 극하는 오행. 직장, 규칙, 책임, 명예. 여자에겐 남편, 남자에겐 자녀.</dd></div>
+        <div><dt>편인 · 정인 <small>인성</small></dt><dd>나를 생하는 오행. 공부, 자격, 문서, 어머니.</dd></div>
+      </dl>
+    </details>
+  </section>
+
+  <section class="grid2" id="s-oh">
+    <div class="panel">
+      <div class="sec-h"><h2>상생 · 상극</h2><span class="muted">원 크기 = 세력</span></div>
+      <svg id="wheel" viewBox="0 -14 380 374" role="img" aria-label="오행 상생상극도"></svg>
+      <div class="legend"><span><i></i>상생 (生)</span><span><i class="k"></i>상극 (剋)</span><span style="color:var(--accent)">◎ 일간 오행</span></div>
+    </div>
+    <div class="panel">
+      <div class="sec-h"><h2>오행 분포</h2>
+        <div class="seg"><input type="radio" name="mode" id="mW" value="weight" checked><label for="mW">세력</label><input type="radio" name="mode" id="mC" value="count"><label for="mC">글자 수</label></div>
+      </div>
+      <div class="bars" id="bars"></div>
+      
+    </div>
+  </section>
+
+  <section class="grid2" id="s-ys">
+    <div class="panel">
+      <div class="sec-h"><h2>일간 강약</h2><b id="strLabel" style="font-family:var(--f-display);font-size:18px"></b></div>
+      <div class="meter"><div class="pin" id="pin"></div></div>
+      <div class="meter-l"><span>극신약</span><span>신약</span><span>중화</span><span>신강</span><span>극신강</span></div>
+      <div class="deuk" id="deuk"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-h"><h2>용신</h2><span class="muted" id="ysMethod"></span></div>
+      <div class="ysbox" id="ysbox"></div>
+      <div class="roles" id="roles"></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <b style="font-size:13px">계절로 본 필요한 글자 <span class="muted" style="font-weight:400" id="gtLabel"></span></b>
+        <div class="gt" id="gt"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="s-gk">
+    <div class="sec-h"><h2>격국</h2><span class="muted">格局</span></div>
+    <div id="gyeok"></div>
+  </section>
+
+  <section class="grid2" id="s-rel">
+    <div class="panel">
+      <div class="sec-h"><h2>합 · 충 · 형 · 파 · 해</h2></div>
+      <div class="rel" id="rels"></div>
+    </div>
+    <div class="panel">
+      <div class="sec-h"><h2>신살</h2><span class="muted">길신과 흉살</span></div>
+      <div class="rel" id="sinsal"></div>
+    </div>
+  </section>
+
+
+  </div>
+  <div class="pg" id="pg-ov" hidden>
+  <section class="sec" id="s-ov">
+    <div class="sec-h"><h2>종합 사주풀이</h2></div>
+    <div class="ov" id="overall"></div>
+  </section>
+
+
+  </div>
+  <div class="pg" id="pg-luck" hidden>
+<section class="sec"><div class="sec-h"><h2>앞으로 10년 운세</h2><span class="muted">세운</span></div><div class="sy-list" id="seun"></div></section>
+  <section class="panel" id="s-dw">
+    <div class="sec-h"><h2>대운</h2><span class="muted" id="dwInfo"></span></div>
+    <div class="dw-guide">
+      <div><b>대운이란</b><span>월주에서 출발해 10년마다 바뀌는 인생의 계절입니다. 원국이 '타고난 차'라면 대운은 '달리는 길'입니다.</span></div>
+      <div><b>교운기</b><span>대운이 바뀌는 해 전후 1~2년은 이사, 이직, 관계 변화가 몰리기 쉬운 전환기입니다.</span></div>
+    </div>
+    <div class="dw-scroll"><div class="dw" id="dw"></div></div>
+    <div class="dw-list" id="dwDetail"></div>
+  </section>
+
+
+  </div>
+  <div class="cta two"><button type="button" class="btn sub" id="shareBtn">공유하기</button><button type="button" class="btn" id="toAskBtn">이 사주로 상담하기</button></div>
+</section>
+
+<!-- ===== 궁합 탭 ===== -->
+<section class="screen" id="scr-gh" data-tab="gh" hidden>
+  <div class="hero">
+    <h1>궁합 보기</h1>
+    <p>두 사람의 사주를 맞춰 보고<br>잘 맞는 점과 맞춰 갈 점을 알려 드려요.</p>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>나</h2></div>
+    <select id="ghMe" class="full"></select>
+    <p class="hint" id="ghMeHint" hidden>사주 탭에서 내 사주를 먼저 입력해 주세요.</p>
+  </div>
+  <form class="card fcard" id="pf" autocomplete="off"></form>
+  <div class="cta"><button type="button" class="btn" id="ghBtn">궁합 보기</button></div>
+</section>
+<section class="screen" id="scr-ghres" data-tab="gh" hidden>
+  <div class="stack" id="viewGh"></div>
+  <div class="cta"><button type="button" class="btn sub" id="ghShare">공유하기</button></div>
+</section>
+
+<!-- ===== 상담 탭 ===== -->
+<section class="screen" id="scr-ask" data-tab="ask" hidden>
+  <div class="hero">
+    <h1>사주 상담</h1>
+    <p>사주를 바탕으로 궁금한 것을 물어보세요.</p>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>누구의 사주로 볼까요?</h2></div>
+    <select id="askWho" class="full"></select>
+    <p class="hint" id="askWhoHint" hidden>사주 탭에서 사주를 먼저 입력해 주세요.</p>
+  </div>
+  <div class="askbox">
+    <div class="achips" id="askChips"></div>
+    <div class="alog" id="askLog" aria-live="polite"></div>
+    <div class="ameta"><span id="askLeft"></span><label id="askCodeWrap" hidden>입장 코드 <input id="askCode" size="10"></label></div>
+    <p class="ainfo">답변은 AI가 사주 정보를 바탕으로 만든 참고용 내용이에요. 질문과 사주 정보는 답변을 위해서만 쓰고 저장하지 않아요.</p>
+  </div>
+  <form id="askForm" class="aform dock" autocomplete="off">
+    <input id="askIn" maxlength="300" placeholder="예) 내년에 이직해도 될까요?" aria-label="질문">
+    <button type="submit" class="btn" id="askGo">보내기</button>
+  </form>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="메뉴">
+  <button type="button" data-tab="saju" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z M9 4v16 M15 4v16 M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>사주</span></button>
+  <button type="button" data-tab="gh"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="15" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>궁합</span></button>
+  <button type="button" data-tab="ask"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>상담</span></button>
+</nav>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
